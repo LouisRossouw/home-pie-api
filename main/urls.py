@@ -54,11 +54,13 @@ urlpatterns = [
     # ** ----
 
     # ** Projects
-    # - TimeInProgress
+    # - Projects; TimeInProgress
+    path('api/time-in-progress/config', time_in_progress.config),
     path('api/time-in-progress/overview', time_in_progress.overview),
     path('api/time-in-progress/<str:platform>/data', time_in_progress.platform_data),  # nopep8
 
-    # - InstaInsights
+    # - Projects; InstaInsights
+    path('api/insta-insights/config', insta_insights.config),
     path('api/insta-insights/overview', insta_insights.overview),
     path('api/insta-insights/accounts', insta_insights.accounts),
     path('api/insta-insights/accounts/<str:account_name>', insta_insights.account_detail),  # nopep8

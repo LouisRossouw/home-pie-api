@@ -8,7 +8,7 @@ import shared.utils.utils as utils
 
 from shared.utils.printouts.printout_general import printout
 
-from .decorators import decorator_overview, decorator_platform_data
+from .decorators import decorator_overview, decorator_platform_data, decorator_config
 from .socials_calculations.calculations import get_graph_data
 from .service import add_historical_data
 
@@ -16,6 +16,7 @@ from .service import add_historical_data
 F = str(__name__)
 O = {'file': F, "func": "overview"}
 PD = {'file': F, "func": "platform_data"}
+C = {'file': F, "func": "config"}
 
 
 @decorator_overview
@@ -83,5 +84,22 @@ def platform_data(request, platform):
 
             utils.calculate_DB_time(start_time)
             return Response({"ok": success}, status=status.HTTP_200_OK)
+
+    return Response(status=status.HTTP_400_BAD_REQUEST)
+
+
+@decorator_config
+def config(request):
+    """ Config """
+
+    printout(C)
+
+    if request.method == "GET":
+        start_time = utils.start_time()
+
+        print('TODO; Config')
+
+        utils.calculate_DB_time(start_time)
+        return Response({}, status=status.HTTP_200_OK)
 
     return Response(status=status.HTTP_400_BAD_REQUEST)
