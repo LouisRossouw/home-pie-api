@@ -5,6 +5,28 @@ data_path = os.path.dirname(os.getenv('DATA_DIR'))
 configs_path = os.path.join(data_path, 'configs')
 
 
+def save_config(data):
+    """ Returns the config. """
+
+    config_file_path = os.path.join(
+        configs_path, 'insta-insights', 'config.json')
+
+    utils.write_to_json(config_file_path, data)
+
+    return True
+
+
+def get_config():
+    """ Returns the config. """
+
+    config_file_path = os.path.join(
+        configs_path, 'insta-insights', 'config.json')
+
+    config = utils.read_json(config_file_path)
+
+    return config
+
+
 def get_all_accounts_from_dir():
     """ Returns all accounts from the config. """
 
