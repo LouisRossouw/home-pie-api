@@ -10,14 +10,15 @@ from rest_framework.response import Response
 
 from projects.time_in_progress.socials_calculations.calculations import get_graph_data
 
-from .decorators import decorator_accounts, decorator_account_detail, decorator_overview
-from .service import remove_account_from_config, get_all_accounts_from_dir, add_account_to_config
+from .decorators import decorator_config, decorator_accounts, decorator_account_detail, decorator_overview
+from .service import save_config, get_config, remove_account_from_config, get_all_accounts_from_dir, add_account_to_config
 
 
 F = str(__name__)
 A = {'file': F, "func": "accounts"}
 AD = {'file': F, "func": "account_detail"}
 O = {'file': F, "func": "overview"}
+C = {'file': F, "func": "config"}
 
 
 @decorator_accounts
@@ -113,4 +114,32 @@ def overview(request):
         }
 
         return Response(context, status=status.HTTP_200_OK)
+    return Response(status=status.HTTP_400_BAD_REQUEST)
+
+
+@decorator_config
+def config(request):
+    """ Config """
+
+    printout(C)
+    start_time = utils.start_time()
+
+    if request.method == "GET":
+        config = get_config()
+
+        utils.calculate_DB_time(start_time)
+        return Response(config, status=status.HTTP_200_OK)
+
+    if request.method == "PUT":
+        print('TODO; Update the config')
+
+        data = request.data
+
+        if data:
+            success = save_config(data)
+
+            if success:
+                utils.calculate_DB_time(start_time)
+                return Response(status=status.HTTP_204_NO_CONTENT)
+
     return Response(status=status.HTTP_400_BAD_REQUEST)
