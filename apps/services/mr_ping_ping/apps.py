@@ -1,6 +1,6 @@
 from django.apps import AppConfig
 
 
-class GengenConfig(AppConfig):
+class MrPingPingConfig(AppConfig):
     default_auto_field = 'django.db.models.BigAutoField'
-    name = 'gengen'
+    name = 'apps.services.mr_ping_ping'

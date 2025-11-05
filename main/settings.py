@@ -32,10 +32,16 @@ INSTALLED_APPS = [
     'social_django',
     'drf_social_oauth2',
 
-    'user',
+    # Core
+    'apps.core.user',
 
-    'projects.insta_insights',
-    'projects.time_in_progress',
+    # Services
+    'apps.services.gengen',
+    'apps.services.mr_ping_ping',
+
+    # Projects
+    'apps.projects.insta_insights',
+    'apps.projects.time_in_progress',
 ]
 
 MIDDLEWARE = [

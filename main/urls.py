@@ -5,13 +5,13 @@ from django.urls import path, include
 import main.views as main
 from django.shortcuts import redirect
 from rest_framework.routers import DefaultRouter
-from user.views import CustomUserCreate, CustomTokenView, CreateLoginView, CompleteLoginWithKeyView, PollLoginKeyView
+from apps.core.user.views import CustomUserCreate, CustomTokenView, CreateLoginView, CompleteLoginWithKeyView, PollLoginKeyView
 
-from gengen import views as gen_gen
-from projects.insta_insights import views as insta_insights
-from projects.time_in_progress import views as time_in_progress
+from apps.services.gengen import views as gen_gen
+from apps.projects.insta_insights import views as insta_insights
+from apps.projects.time_in_progress import views as time_in_progress
 
-from mr_ping_ping import views as ping_ping
+from apps.services.mr_ping_ping import views as ping_ping
 
 from drf_spectacular.views import (
     SpectacularAPIView,

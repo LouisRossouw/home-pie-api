@@ -8,7 +8,7 @@ from shared.utils.printouts.printout_general import printout
 from rest_framework import status
 from rest_framework.response import Response
 
-from projects.time_in_progress.socials_calculations.calculations import get_graph_data
+from apps.projects.time_in_progress.socials_calculations.calculations import get_graph_data
 
 from .decorators import decorator_config, decorator_accounts, decorator_account_detail, decorator_overview
 from .service import save_config, get_config, remove_account_from_config, get_all_accounts_from_dir, add_account_to_config
