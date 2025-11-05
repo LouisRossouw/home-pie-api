@@ -5,13 +5,13 @@ from django.urls import path, include
 import main.views as main
 from django.shortcuts import redirect
 from rest_framework.routers import DefaultRouter
-from user.views import CustomUserCreate, CustomTokenView, CreateLoginView, CompleteLoginWithKeyView, PollLoginKeyView
+from apps.core.user.views import CustomUserCreate, CustomTokenView, CreateLoginView, CompleteLoginWithKeyView, PollLoginKeyView
 
-from gengen import views as gen_gen
-from projects.insta_insights import views as insta_insights
-from projects.time_in_progress import views as time_in_progress
+from apps.services.gengen import views as gen_gen
+from apps.projects.insta_insights import views as insta_insights
+from apps.projects.time_in_progress import views as time_in_progress
 
-from mr_ping_ping import views as ping_ping
+from apps.services.mr_ping_ping import views as ping_ping
 
 from drf_spectacular.views import (
     SpectacularAPIView,
@@ -54,11 +54,13 @@ urlpatterns = [
     # ** ----
 
     # ** Projects
-    # - TimeInProgress
+    # - Projects; TimeInProgress
+    path('api/time-in-progress/config', time_in_progress.config),
     path('api/time-in-progress/overview', time_in_progress.overview),
     path('api/time-in-progress/<str:platform>/data', time_in_progress.platform_data),  # nopep8
 
-    # - InstaInsights
+    # - Projects; InstaInsights
+    path('api/insta-insights/config', insta_insights.config),
     path('api/insta-insights/overview', insta_insights.overview),
     path('api/insta-insights/accounts', insta_insights.accounts),
     path('api/insta-insights/accounts/<str:account_name>', insta_insights.account_detail),  # nopep8

@@ -10,7 +10,7 @@ from oauth2_provider.models import AccessToken, RefreshToken
 from drf_social_oauth2.views import TokenView as DRFSocialTokenView
 from drf_spectacular.utils import extend_schema
 
-from user.models import User, LoginKey
+from apps.core.user.models import User, LoginKey
 
 from shared.utils.printouts.views.printout_users import printout_CustomUserCreate
 

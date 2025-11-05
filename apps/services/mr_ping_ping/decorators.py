@@ -95,7 +95,7 @@ def decorator_app_recorded_data(view_func):
                 type=OpenApiTypes.STR,
                 location=OpenApiParameter.QUERY,
                 description="Time range for data",
-                enum=["hour", "day", "week", "month"],
+                enum=["hour", "day", "week", "month", "year"],
             ),
             OpenApiParameter(
                 name="interval",
