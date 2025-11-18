@@ -6,7 +6,7 @@ import main.views as main
 from django.shortcuts import redirect
 from rest_framework.routers import DefaultRouter
 from apps.core.user.views import CustomUserCreate, CustomTokenView, CreateLoginView, CompleteLoginWithKeyView, PollLoginKeyView
-
+from apps.iot.inventory.views import CompartmentViewSet,  InventoryViewSet, PartViewSet, StorageUnitViewSet
 from apps.services.gengen import views as gen_gen
 from apps.projects.insta_insights import views as insta_insights
 from apps.projects.time_in_progress import views as time_in_progress
@@ -22,7 +22,11 @@ from drf_spectacular.views import (
 
 router = DefaultRouter()
 
-# noqa
+# ** IOT Physical devices etc.
+router.register(r"iot/inventory/storage-units", StorageUnitViewSet)
+router.register(r"iot/inventory/compartments", CompartmentViewSet)
+router.register(r"iot/inventory/parts", PartViewSet)
+router.register(r"iot/inventory", InventoryViewSet)
 
 urlpatterns = [
     # ** Admin
@@ -31,15 +35,17 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     # ** ----
 
+    path("api/", include(router.urls)),
+
     # schema & Swagger & Redoc
     path("api/schema/", SpectacularAPIView.as_view(), name="schema"),
     path("api/docs/redoc/", SpectacularRedocView.as_view(url_name="schema"), name="redoc",),  # nopep8
     path("api/docs/swagger/", SpectacularSwaggerView.as_view(url_name="schema"), name="swagger-ui",),  # nopep8
 
     # ** Server / API
-    path('api/stats', main.stats, name='stats'),
-    path('api/health', main.health, name='health'),
-    path('api/test', main.test_view, name='test'),
+    path('api/stats', main.stats),
+    path('api/health', main.health),
+    path('api/test', main.test_view),
     # ** ----
 
     # ** User Management: Manual signup + Oauth with google
@@ -83,5 +89,4 @@ urlpatterns = [
     path('api/mr-ping-ping/apps/status/<str:app_name>', ping_ping.app_status),
     path('api/mr-ping-ping/apps/data/<str:app_name>', ping_ping.app_recorded_data),  # nopep8
     # ** ----
-
 ]

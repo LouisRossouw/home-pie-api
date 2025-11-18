@@ -42,6 +42,9 @@ INSTALLED_APPS = [
     # Projects
     'apps.projects.insta_insights',
     'apps.projects.time_in_progress',
+
+    # IOT related physical devices
+    'apps.iot.inventory',
 ]
 
 MIDDLEWARE = [
