@@ -117,7 +117,7 @@ def apps_status(request):
 
         utils.calculate_DB_time(start_time)
 
-        return Response({"ok": True, "data": apps_status}, status=status.HTTP_200_OK)
+        return Response(apps_status, status=status.HTTP_200_OK)
     return Response(status=status.HTTP_400_BAD_REQUEST)
 
 
@@ -139,7 +139,7 @@ def app_status(request, app_name):
 
         utils.calculate_DB_time(start_time)
 
-        return Response({"ok": True, "data": data}, status=status.HTTP_200_OK)
+        return Response(data, status=status.HTTP_200_OK)
     return Response(status=status.HTTP_400_BAD_REQUEST)
 
 
@@ -164,5 +164,5 @@ def app_recorded_data(request, app_name):
 
         utils.calculate_DB_time(start_time)
 
-        return Response({"ok": True, "data": data}, status=status.HTTP_200_OK)
+        return Response(data, status=status.HTTP_200_OK)
     return Response(status=status.HTTP_400_BAD_REQUEST)
