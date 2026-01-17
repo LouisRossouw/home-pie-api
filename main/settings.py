@@ -40,6 +40,7 @@ INSTALLED_APPS = [
     'apps.services.mr_ping_ping',
 
     # Projects
+    'apps.projects.yt_insights',
     'apps.projects.insta_insights',
     'apps.projects.time_in_progress',
 ]
