@@ -8,7 +8,7 @@ data_path = os.getenv('DATA_DIR')
 def get_graph_data(account, range, interval, platform):
     """ Returns the accounts historic data """
 
-    post_key, followers_key = get_keys(platform)
+    post_key, followers_key, views = get_keys(platform)
 
     data_dir = os.path.join(data_path, platform)
     account_data_dir = os.path.join(data_dir, account)
@@ -60,6 +60,23 @@ def get_graph_data(account, range, interval, platform):
                 past_name = prev_value["name"]
                 past_post_value = int(prev_value["stats"][post_key])
                 past_followers_value = int(prev_value["stats"][followers_key])  # nopep8
+                past_views = int(prev_value["stats"].get(views) or '0')  # nopep8
+
+                profile_picture_url = ''
+
+                if platform == 'instagram':
+                    profile_picture_url = prev_value.get("stats", {}).get(
+                        'profile_picture_url', ''
+                    )
+
+                elif platform == 'youtube':
+                    avatar = prev_value.get("stats", {}).get("avatar") or {}
+                    profile_picture_url = avatar.get('default') or ''
+
+                elif platform == 'x-twitter':
+                    profile_picture_url = prev_value.get("stats", {}).get(
+                        'profile_image_url', ''
+                    )
 
                 # Append when posted a new post.
                 if past_post_value != prev_post and prev_post != None:
@@ -95,8 +112,9 @@ def get_graph_data(account, range, interval, platform):
                             'name': past_name,
                             'post': past_post_value,
                             'followers': past_followers_value,
+                            "views": past_views,
                             'postedAt': posted_at_followers_count,
-                            'profile_picture_url': prev_value["stats"].get('profile_picture_url')
+                            'profile_picture_url': profile_picture_url
                         })
 
     # Compare data between the from and the to.
@@ -131,6 +149,8 @@ def get_graph_data(account, range, interval, platform):
             "post_difference": post_difference,
             "followers_difference": followers_difference,
 
+            "views":  int(value["stats"].get(views) or "0"),
+
             "average_per_10_min": average_per_10_min,
             "average_per_1_hour": round(average_per_10_min * 6, 2),
             "average_per_1_day": round(average_per_10_min * 24, 2),
@@ -155,24 +175,29 @@ def get_keys(platform):
     if platform == 'instagram':
         post_key = "post_value"
         followers_key = "followers_value"
+        views = None
 
     if platform == 'tiktok':
         post_key = "likes"
         followers_key = "followers_value"
+        views = None
 
     if platform == 'bluesky':
         post_key = "posts_count"
         followers_key = "followers_count"
+        views = None
 
     if platform == 'youtube':
         post_key = "video_count"
         followers_key = "subscriber_count"
+        views = "view_count"
 
     if platform == 'x-twitter':
         post_key = "tweets_value"
         followers_key = "followers_value"
+        views = None
 
-    return post_key, followers_key
+    return post_key, followers_key, views
 
 
 def calculate_average_difference(list_of_values):
