@@ -238,3 +238,27 @@ def maybe_append(date, range, interval):
             append_value = str(day) + '_' + str(value)
 
     return append_value
+
+
+def coerce_value(value):
+    if not isinstance(value, str):
+        return value
+
+    lower = value.lower()
+
+    if lower == "true":
+        return True
+    if lower == "false":
+        return False
+
+    try:
+        return int(value)
+    except ValueError:
+        pass
+
+    try:
+        return float(value)
+    except ValueError:
+        pass
+
+    return value
