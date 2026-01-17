@@ -9,6 +9,7 @@ from apps.core.user.views import CustomUserCreate, CustomTokenView, CreateLoginV
 
 from apps.services.gengen import views as gen_gen
 from apps.projects.insta_insights import views as insta_insights
+from apps.projects.yt_insights import views as yt_insights
 from apps.projects.time_in_progress import views as time_in_progress
 
 from apps.services.mr_ping_ping import views as ping_ping
@@ -64,6 +65,14 @@ urlpatterns = [
     path('api/insta-insights/overview', insta_insights.overview),
     path('api/insta-insights/accounts', insta_insights.accounts),
     path('api/insta-insights/accounts/<str:account_name>', insta_insights.account_detail),  # nopep8
+    # - Projects; YTInsights
+    path('api/yt-insights/config', yt_insights.config),
+    path('api/yt-insights/overview', yt_insights.overview),
+    path('api/yt-insights/accounts', yt_insights.accounts),
+    path('api/yt-insights/accounts/<str:account_name>', yt_insights.account_detail),  # nopep8
+
+
+
     # ** ----
 
     # ** GenGen
