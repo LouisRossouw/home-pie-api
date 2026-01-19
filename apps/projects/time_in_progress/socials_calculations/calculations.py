@@ -78,13 +78,6 @@ def get_graph_data(account, range, interval, platform):
                         'profile_image_url', ''
                     )
 
-                # Append when posted a new post.
-                if past_post_value != prev_post and prev_post != None:
-                    posted_at_followers_count = past_followers_value
-                else:
-                    posted_at_followers_count = 0
-                prev_post = past_post_value
-
                 collection.append({prev: prev_value})
                 follower_count.append(past_followers_value)
 
