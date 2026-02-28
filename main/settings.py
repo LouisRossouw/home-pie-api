@@ -43,6 +43,9 @@ INSTALLED_APPS = [
     'apps.projects.yt_insights',
     'apps.projects.insta_insights',
     'apps.projects.time_in_progress',
+    
+    # Other
+    'apps.other.finances',
 ]
 
 MIDDLEWARE = [
@@ -257,3 +260,5 @@ print("SERVER_URL:", SERVER_API_URL)
 
 print('MAIL_DELIVERY_SANDBOX:', MAIL_DELIVERY_SANDBOX)
 print("--")
+
+LOGIN_URL = 'login'
