@@ -1,0 +1,12 @@
+version: '3.8'
+
+services:
+  web:
+    build: .
+    ports:
+      - "7979:7979"
+    volumes:
+      - .:/app
+    # Optional: If you use the .env file in the project for secrets/config
+    env_file:
+      - .env
