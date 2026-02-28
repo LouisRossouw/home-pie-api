@@ -15,8 +15,10 @@ from apps.core.user.models import User, LoginKey
 from shared.utils.printouts.views.printout_users import printout_CustomUserCreate
 
 from .decorators import complete_login_key_schema, poll_loginkey_view, create_loginkey_view
-from .utils import get_access_expires_in, get_access_expires_in, is_refresh_expired
+from .utils import get_access_expires_in, is_refresh_expired, issue_tokens
 from .serializers import CustomUserSerializer, CustomTokenSerializer, CustomTokenRequestSerializer, CustomTokenResponseSerializer
+from django.shortcuts import render, redirect
+from django.conf import settings
 
 
 F = str(__name__)
@@ -125,11 +127,14 @@ class PollLoginKeyView(RetrieveAPIView):
             refresh_token = RefreshToken.objects.filter(
                 user=login_key.user).last()
 
-            # created = refresh_token.created
+            if not refresh_token:
+                access_token, refresh_token = issue_tokens(login_key.user)
+            else:
+                access_token = refresh_token.access_token
+
+            # check if token already granted is expired.
             revoked = refresh_token.revoked
             application = refresh_token.application  # Manual or Google auth type
-
-            access_token = refresh_token.access_token
             is_expired = access_token.is_expired()
 
             expires = access_token.expires
@@ -145,20 +150,20 @@ class PollLoginKeyView(RetrieveAPIView):
                 print("Refresh token is valid")
 
                 if access_token and not is_expired:
-                    token_obj = AccessToken.objects.get(token=access_token)
+                    token_obj = access_token
 
                     custom_response_data = CustomTokenSerializer(token_obj).data  # nopep8
 
                     # TODO; Maybe dont include user in the return, maybe create a new endpoint for user.
 
                     token_data = {
-                        "access_token": str(access_token),
-                        "refresh_token": str(refresh_token),
+                        "access_token": access_token.token,
+                        "refresh_token": refresh_token.token,
                         "application": str(application),
-                        "user": custom_response_data,
+                        "user": custom_response_data['user'],
                         "expires_in": expires_in,
                         "expires": expires,
-                        "scope": "read write"
+                        "scope": custom_response_data['scope']
                     }
 
                     login_key.delete()
@@ -169,6 +174,17 @@ class PollLoginKeyView(RetrieveAPIView):
                     # TODO; Regenerate new tokens or restart the auth process.
 
         return Response({"status": "pending"}, status=status.HTTP_200_OK)
+
+
+class TestAuthView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        return Response({
+            "ok": True,
+            "user": request.user.username,
+            "auth": str(request.auth)
+        })
 
 
 @complete_login_key_schema
@@ -193,3 +209,51 @@ class CompleteLoginWithKeyView(APIView):
         login_key.save()
 
         return Response({"status": "complete"}, status=status.HTTP_201_CREATED)
+
+
+# Removed @login_required to manually handle addAccount intent
+def auth_app(request):
+    import urllib.parse
+    from django.contrib.auth import logout
+    from django.shortcuts import resolve_url
+
+    add_account = request.GET.get('addAccount') == 'true'
+
+    if add_account:
+        if request.user.is_authenticated:
+            logout(request)
+
+        params = request.GET.copy()
+        params.pop('addAccount', None)
+        next_url = request.path + '?' + urllib.parse.urlencode(params)
+
+        login_url = resolve_url(settings.LOGIN_URL)
+        return redirect(f"{login_url}?next={urllib.parse.quote(next_url)}")
+
+    if not request.user.is_authenticated:
+        login_url = resolve_url(settings.LOGIN_URL)
+        next_url = request.get_full_path()
+        return redirect(f"{login_url}?next={urllib.parse.quote(next_url)}")
+
+    login_key_str = request.GET.get('loginKey')
+    if not login_key_str:
+        return render(request, 'user/auth_app.html', {'success': False})
+
+    try:
+        login_key = LoginKey.objects.get(key=login_key_str)
+        if login_key.is_expired():
+            return render(request, 'user/auth_app.html', {'success': False, 'error': 'Key expired'})
+
+        # Associate the user with the key
+        login_key.user = request.user
+        login_key.save()
+
+        is_dev = getattr(settings, 'DEV', True)
+        protocol = f"homepie{'-dev' if is_dev else ''}"
+
+        return render(request, 'user/auth_app.html', {
+            'success': True,
+            'protocol': protocol
+        })
+    except (LoginKey.DoesNotExist, ValueError):
+        return render(request, 'user/auth_app.html', {'success': False, 'error': 'Invalid key'})
