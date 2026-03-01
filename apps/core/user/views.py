@@ -127,51 +127,32 @@ class PollLoginKeyView(RetrieveAPIView):
             refresh_token = RefreshToken.objects.filter(
                 user=login_key.user).last()
 
-            if not refresh_token:
-                access_token, refresh_token = issue_tokens(login_key.user)
-            else:
+            if refresh_token:
                 access_token = refresh_token.access_token
+                is_expired = access_token.is_expired() if access_token else True
+                if refresh_token.revoked or is_refresh_expired(refresh_token) or is_expired:
+                    access_token, refresh_token = issue_tokens(login_key.user)
+            else:
+                access_token, refresh_token = issue_tokens(login_key.user)
 
-            # check if token already granted is expired.
-            revoked = refresh_token.revoked
             application = refresh_token.application  # Manual or Google auth type
-            is_expired = access_token.is_expired()
-
             expires = access_token.expires
             expires_in = get_access_expires_in(access_token)
 
-            if revoked:
-                print("Refresh token has been revoked")
+            custom_response_data = CustomTokenSerializer(access_token).data
 
-            elif is_refresh_expired(refresh_token):
-                print("Refresh token has expired")
+            token_data = {
+                "access_token": access_token.token,
+                "refresh_token": refresh_token.token,
+                "application": str(application),
+                "user": custom_response_data['user'],
+                "expires_in": expires_in,
+                "expires": expires,
+                "scope": custom_response_data['scope']
+            }
 
-            else:
-                print("Refresh token is valid")
-
-                if access_token and not is_expired:
-                    token_obj = access_token
-
-                    custom_response_data = CustomTokenSerializer(token_obj).data  # nopep8
-
-                    # TODO; Maybe dont include user in the return, maybe create a new endpoint for user.
-
-                    token_data = {
-                        "access_token": access_token.token,
-                        "refresh_token": refresh_token.token,
-                        "application": str(application),
-                        "user": custom_response_data['user'],
-                        "expires_in": expires_in,
-                        "expires": expires,
-                        "scope": custom_response_data['scope']
-                    }
-
-                    login_key.delete()
-                    return Response(token_data)
-
-                else:
-                    print("TODO; Regenerate new tokens or restart the auth process.")
-                    # TODO; Regenerate new tokens or restart the auth process.
+            login_key.delete()
+            return Response(token_data)
 
         return Response({"status": "pending"}, status=status.HTTP_200_OK)
 
