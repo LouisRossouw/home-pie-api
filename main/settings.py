@@ -9,7 +9,8 @@ SECRET_KEY = os.getenv('DJANGO_SECRET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEV = True if os.getenv('APP_ENV') == "dev" else False
-DEBUG = True if DEV else False
+# DEBUG = True if DEV else False
+DEBUG: True  # Temp for css styling, TODO: python manage.py collectstatic
 
 ALLOWED_HOSTS = os.getenv('DJANGO_ALLOWED_HOSTS').split(",")
 
@@ -43,7 +44,7 @@ INSTALLED_APPS = [
     'apps.projects.yt_insights',
     'apps.projects.insta_insights',
     'apps.projects.time_in_progress',
-    
+
     # Other
     'apps.other.finances',
 ]
