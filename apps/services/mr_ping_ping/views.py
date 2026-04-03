@@ -1,3 +1,4 @@
+import requests
 from rest_framework import status
 from rest_framework.response import Response
 
@@ -5,8 +6,8 @@ import shared.utils.utils as utils
 
 from shared.utils.printouts.printout_general import printout
 
-from . import service
 from . import decorators as dec
+
 
 F = str(__name__)
 PC = {'file': F, "func": "pingping_config"}
@@ -17,6 +18,8 @@ ASS = {'file': F, "func": "apps_status"}
 AS = {'file': F, "func": "app_status"}
 ARD = {'file': F, "func": "app_recorded_data"}
 
+api_base_rul = "http://localhost:5005"
+
 
 @dec.decorator_pingping_config
 def pingping_config(request):
@@ -25,21 +28,13 @@ def pingping_config(request):
     printout(PC)
     start_time = utils.start_time()
 
-    # TODO; POST, PUT, PATCH, config
-
     if request.method == "GET":
-        date, res_time, last_pinged = service.get_ping_ping_data('hour', 1)
-        elapsed_time = utils.calculate_DB_time(start_time)
+        res = requests.get(f"{api_base_rul}/health")
 
-        context = {
-            'ok': True,
-            'date': date,
-            'res_time': res_time,
-            'last_pinged': last_pinged,
-            'db_elapsed_time': elapsed_time,
-        }
+        if res.status_code == 200:
+            et = utils.calculate_DB_time(start_time)
+            return Response({**res.json(), "elapsed_time": et}, status=status.HTTP_200_OK)
 
-        return Response(context, status=status.HTTP_200_OK)
     return Response(status=status.HTTP_400_BAD_REQUEST)
 
 
@@ -51,18 +46,12 @@ def pingping_status(request):
     start_time = utils.start_time()
 
     if request.method == "GET":
-        date, res_time, last_pinged = service.get_ping_ping_data('hour', 1)
-        elapsed_time = utils.calculate_DB_time(start_time)
+        res = requests.get(f"{api_base_rul}/health")
 
-        context = {
-            'ok': True,
-            'date': date,
-            'res_time': res_time,
-            'last_pinged': last_pinged,
-            'db_elapsed_time': elapsed_time,
-        }
+        if res.status_code == 200:
+            et = utils.calculate_DB_time(start_time)
+            return Response({**res.json(), "elapsed_time": et}, status=status.HTTP_200_OK)
 
-        return Response(context, status=status.HTTP_200_OK)
     return Response(status=status.HTTP_400_BAD_REQUEST)
 
 
@@ -73,17 +62,13 @@ def app_config(request, app_name):
     printout(AC)
     start_time = utils.start_time()
 
-    # TODO; POST, PUT, PATCH, config
-
     if request.method == "GET":
-        maybe_app = service.get_app_config(app_name)
+        res = requests.get(f"{api_base_rul}/ping-apps?app={app_name}")
 
-        if not maybe_app:
-            return Response({"ok": False}, status=status.HTTP_400_BAD_REQUEST)
+        if res.ok:
+            et = utils.calculate_DB_time(start_time)
+            return Response({**res.json(), "elapsed_time": et}, status=status.HTTP_200_OK)
 
-        utils.calculate_DB_time(start_time)
-
-        return Response({"ok": True, "data": maybe_app}, status=status.HTTP_200_OK)
     return Response(status=status.HTTP_400_BAD_REQUEST)
 
 
@@ -94,14 +79,13 @@ def apps_config(request):
     printout(ASC)
     start_time = utils.start_time()
 
-    # TODO; POST, PUT, PATCH, config
-
     if request.method == "GET":
-        configs = service.get_apps_config()
+        res = requests.get(f"{api_base_rul}/ping-apps/actions")
 
-        utils.calculate_DB_time(start_time)
+        if res.ok:
+            et = utils.calculate_DB_time(start_time)
+            return Response({"data": res.json(), "elapsed_time": et}, status=status.HTTP_200_OK)
 
-        return Response({"ok": True, "data": configs}, status=status.HTTP_200_OK)
     return Response(status=status.HTTP_400_BAD_REQUEST)
 
 
@@ -113,11 +97,12 @@ def apps_status(request):
     start_time = utils.start_time()
 
     if request.method == "GET":
-        apps_status = service.get_apps_status()
+        res = requests.get(f"{api_base_rul}/ping-apps/status")
 
-        utils.calculate_DB_time(start_time)
+        if res.ok:
+            utils.calculate_DB_time(start_time)
+            return Response(res.json(), status=status.HTTP_200_OK)
 
-        return Response(apps_status, status=status.HTTP_200_OK)
     return Response(status=status.HTTP_400_BAD_REQUEST)
 
 
@@ -129,17 +114,12 @@ def app_status(request, app_name):
     start_time = utils.start_time()
 
     if request.method == "GET":
+        res = requests.get(f"{api_base_rul}/ping-apps/status?app={app_name}")
 
-        app_status = service.get_app_status(app_name)
+        if res.ok:
+            utils.calculate_DB_time(start_time)
+            return Response({"appName": app_name, **res.json()}, status=status.HTTP_200_OK)
 
-        if not app_status:
-            return Response({"ok": False}, status=status.HTTP_400_BAD_REQUEST)
-
-        data = {"appName": app_name, **app_status}
-
-        utils.calculate_DB_time(start_time)
-
-        return Response(data, status=status.HTTP_200_OK)
     return Response(status=status.HTTP_400_BAD_REQUEST)
 
 
@@ -154,15 +134,12 @@ def app_recorded_data(request, app_name):
     interval = int(request.GET.get('interval') or 1)
 
     if request.method == "GET":
+        res = requests.get(
+            f"{api_base_rul}/ping-apps/data?app={app_name}&interval={interval}&range={range}")
 
-        app_status = service.get_app_recorded_data(app_name, range, interval)
+        if res.ok:
+            data = {"appName": app_name, "app_status": res.json()}
+            utils.calculate_DB_time(start_time)
+            return Response(data, status=status.HTTP_200_OK)
 
-        if not app_status:
-            return Response({"ok": False}, status=status.HTTP_400_BAD_REQUEST)
-
-        data = {"appName": app_name, "app_status": app_status}
-
-        utils.calculate_DB_time(start_time)
-
-        return Response(data, status=status.HTTP_200_OK)
     return Response(status=status.HTTP_400_BAD_REQUEST)
