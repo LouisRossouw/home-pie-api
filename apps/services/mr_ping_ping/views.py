@@ -18,7 +18,7 @@ ASS = {'file': F, "func": "apps_status"}
 AS = {'file': F, "func": "app_status"}
 ARD = {'file': F, "func": "app_recorded_data"}
 
-api_base_rul = "http://localhost:5005"
+api_base_rul = "http://10.0.0.152:5005"
 
 
 @dec.decorator_pingping_config

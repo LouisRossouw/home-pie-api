@@ -8,12 +8,16 @@ services:
       - "7979:7979"
     volumes:
       # Mount the SQLite database file to persist data across container restarts.
-      # Make sure db.sqlite3 exists on your host before running docker compose, 
-      # otherwise Docker will create a directory named db.sqlite3 instead of a file.
       - ./db.sqlite3:/app/db.sqlite3
-      
+
+      # Mount the external data directory from the network share.
+      # We mount the parent folder to /mnt/socials so the code sees data/ and configs/ as siblings.
+      - "//LOURO-SERVER/Projects/time-in-progress-socials/:/mnt/socials"
+
       # Optional: if you want to mount your entire project for live code reloading during development, uncomment below:
       # - .:/app/
+    environment:
+      - DATA_DIR=/mnt/socials/data
     env_file:
       - .env
     # For development/local network, gunicorn is already the default CMD in the Dockerfile.
