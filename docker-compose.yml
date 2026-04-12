@@ -7,9 +7,8 @@ services:
       - "7979:7979"
     volumes:
       - ./db.sqlite3:/app/db.sqlite3
-      - /opt/projects/time-in-progress-socials:/data
-      
+      - /opt/projects/time-in-progress-socials:/opt/projects/time-in-progress-socials
     environment:
-      - DATA_DIR=/data
+      - DATA_DIR=/opt/projects/time-in-progress-socials/data
     env_file:
       - .env
