@@ -7,19 +7,9 @@ services:
     ports:
       - "7979:7979"
     volumes:
-      # Mount the SQLite database file to persist data across container restarts.
       - ./db.sqlite3:/app/db.sqlite3
-
-      # Mount the external data directory from the network share.
-      # We mount the parent folder to /mnt/socials so the code sees data/ and configs/ as siblings.
-      - "//LOURO-SERVER/Projects/time-in-progress-socials/:/mnt/socials"
-
-      # Optional: if you want to mount your entire project for live code reloading during development, uncomment below:
-      # - .:/app/
+      - /opt/projects/time-in-progress-socials:/socials
     environment:
-      - DATA_DIR=/mnt/socials/data
+      - DATA_DIR=/data
     env_file:
       - .env
-    # For development/local network, gunicorn is already the default CMD in the Dockerfile.
-    # If you want to override the command to run the development server with live reload:
-    # command: python manage.py runserver 0.0.0.0:8000
