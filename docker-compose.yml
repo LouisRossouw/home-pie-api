@@ -9,6 +9,6 @@ services:
       - ./db.sqlite3:/app/db.sqlite3
       - /opt/projects/time-in-progress-socials:/data
     environment:
-      - DATA_DIR=/opt/projects/time-in-progress-socials/data
+      - DATA_DIR=/data
     env_file:
       - .env
