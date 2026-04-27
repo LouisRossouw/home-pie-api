@@ -1,6 +1,6 @@
 
 import datetime
-
+import requests
 from rest_framework import status
 from rest_framework.response import Response
 
@@ -9,14 +9,25 @@ import shared.utils.utils as utils
 from shared.utils.printouts.printout_general import printout
 
 from .decorators import decorator_overview, decorator_platform_data, decorator_config
-from .socials_calculations.calculations import get_graph_data
-from .service import add_historical_data
 
+from django.conf import settings
 
 F = str(__name__)
 O = {'file': F, "func": "overview"}
 PD = {'file': F, "func": "platform_data"}
 C = {'file': F, "func": "config"}
+
+api_base_url = settings.INSIGHTS_API_URL
+
+
+def get_data(platform, params):
+    try:
+        res = requests.get(f"{api_base_url}/{platform}/insights/data", params=params, timeout=10)  # nopep8
+        res.raise_for_status()
+        return res.json()
+    except requests.RequestException as e:
+        print("Request failed:", e)
+        return []
 
 
 @decorator_overview
@@ -32,11 +43,19 @@ def overview(request):
         interval = int(request.GET.get('interval') or 1)
         account = request.GET.get('account') or "time.in.progress"
 
-        instagram = get_graph_data(account, range, interval, 'instagram')
-        twitter = get_graph_data(account, range, interval, 'x-twitter')
-        youtube = get_graph_data(account, range, interval, 'youtube')
-        bluesky = get_graph_data(account, range, interval, 'bluesky')
-        tiktok = get_graph_data(account, range, interval, 'tiktok')
+        # TODO; Call the endpont:
+        # resutest.get(url, account, range, interval, 'instagram') # Or even better, allow for a list.
+        params = {
+            "range": range,
+            "account": account,
+            "interval": interval
+        }
+
+        instagram = get_data("instagram", params)
+        twitter = get_data("x-twitter", params)
+        youtube = get_data("youtube", params)
+        bluesky = get_data("bluesky", params)
+        tiktok = get_data("tiktok", params)
 
         elapsed_time = utils.calculate_DB_time(start_time)
 
@@ -79,11 +98,20 @@ def platform_data(request, platform):
 
         # Temp; Only allow tiktok for now.
         if platform == 'tiktok':
-            success = add_historical_data(
-                platform, followers, following, likes)
+            try:
+                res = requests.post(f"{api_base_url}/tiktok/insights/data", params={
+                    "platform": platform,
+                    "followers": followers,
+                    "following": following,
+                    "likes": likes,
+                }, timeout=10)
+
+            except requests.RequestException as e:
+                print("Request failed:", e)
+                return Response({"ok": False}, status=status.HTTP_400_BAD_REQUEST)
 
             utils.calculate_DB_time(start_time)
-            return Response({"ok": success}, status=status.HTTP_200_OK)
+            return Response({"ok": res.status_code == 200}, status=status.HTTP_200_OK)
 
     return Response(status=status.HTTP_400_BAD_REQUEST)
 

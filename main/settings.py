@@ -9,8 +9,7 @@ SECRET_KEY = os.getenv('DJANGO_SECRET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEV = True if os.getenv('APP_ENV') == "dev" else False
-# DEBUG = True if DEV else False
-DEBUG: True  # Temp for css styling, TODO: python manage.py collectstatic
+DEBUG = True if DEV else False
 
 ALLOWED_HOSTS = os.getenv('DJANGO_ALLOWED_HOSTS').split(",")
 
@@ -51,6 +50,7 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -131,9 +131,21 @@ USE_TZ = True
 
 STATIC_URL = 'static/'
 
+STATIC_ROOT = BASE_DIR / 'staticfiles'
+
 STATICFILES_DIRS = [
     str(BASE_DIR) + "/main/static",
 ]
+
+# WhiteNoise configuration
+STORAGES = {
+    "default": {
+        "BACKEND": "django.core.files.storage.FileSystemStorage",
+    },
+    "staticfiles": {
+        "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
+    },
+}
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
@@ -193,6 +205,9 @@ PROJECT_NAME = "Home-Pie"
 DEV_BASEURL = os.getenv('DJANGO_DEV_BASEURL')
 PROD_BASEURL = os.getenv('DJANGO_PROD_BASEURL')
 SERVER_API_URL = DEV_BASEURL if DEV else PROD_BASEURL
+
+INSIGHTS_API_URL = os.getenv('INSIGHTS_API_URL', "http://10.0.0.152:5006")
+PING_PING_API_URL = os.getenv('PING_PING_API_URL', "http://10.0.0.152:5005")
 
 
 AUTH_USER_MODEL = "user.User"

@@ -1,16 +1,18 @@
+import requests
 from rest_framework import status
 from rest_framework.response import Response
 from .decorators import decorator_start_gengen, decorator_check_gengen_progress
 
-import shared.utils.utils as utils
 from shared.utils.printouts.printout_general import printout
+import shared.utils.utils as utils
 
-from .generation import gengen
-
+from django.conf import settings
 
 F = str(__name__)
 SG = {'file': F, "func": "start_gengen"}
 CGP = {'file': F, "func": "check_genGen_progress"}
+
+api_base_url = settings.INSIGHTS_API_URL
 
 
 @decorator_start_gengen
@@ -22,10 +24,11 @@ def start_gengen(request):
 
     if request.method == "POST":
 
-        hasStarted = gengen.run_gengen()
+        res = requests.post(f"{api_base_url}/generate", timeout=10)
+        has_started = res.status_code
 
         utils.calculate_DB_time(start_time)
-        return Response({'ok': True, 'hasStarted': hasStarted}, status=status.HTTP_200_OK)
+        return Response({'ok': True, 'hasStarted': has_started}, status=status.HTTP_200_OK)
     return Response(status=status.HTTP_400_BAD_REQUEST)
 
 
@@ -36,9 +39,11 @@ def check_progress(request):
     printout(CGP)
 
     if request.method == "GET":
-        progress = gengen.check_gengen()
+        res = requests.get(f"{api_base_url}/generate/status", timeout=10)
 
-        # TODO; Calculate percentage for the client progressbar.
+        if res.status_code == 200:
+            progress = res.json()
+            # TODO; Calculate percentage for the client progressbar.
+            return Response({'ok': True, "progress": progress}, status=status.HTTP_200_OK)
 
-        return Response({'ok': True, "progress": progress}, status=status.HTTP_200_OK)
     return Response(status=status.HTTP_400_BAD_REQUEST)

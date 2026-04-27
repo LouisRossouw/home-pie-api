@@ -1,5 +1,4 @@
-import os
-import json
+import requests
 import datetime
 
 import shared.utils.utils as utils
@@ -8,10 +7,10 @@ from shared.utils.printouts.printout_general import printout
 from rest_framework import status
 from rest_framework.response import Response
 
-from apps.projects.time_in_progress.socials_calculations.calculations import get_graph_data
-
 from .decorators import decorator_config, decorator_accounts, decorator_account_detail, decorator_overview
-from .service import save_config, get_config, remove_account_from_config, get_all_accounts_from_dir, add_account_to_config
+
+
+from django.conf import settings
 
 
 F = str(__name__)
@@ -19,6 +18,8 @@ A = {'file': F, "func": "accounts"}
 AD = {'file': F, "func": "account_detail"}
 O = {'file': F, "func": "overview"}
 C = {'file': F, "func": "config"}
+
+api_base_url = settings.INSIGHTS_API_URL
 
 
 @decorator_accounts
@@ -28,18 +29,18 @@ def accounts(request):
     start_time = utils.start_time()
 
     if request.method == 'GET':
+        res = requests.get(f"{api_base_url}/instagram/insights/accounts")
+        data = res.json()
 
-        data = get_all_accounts_from_dir()
-
-        utils.calculate_DB_time(start_time)
-        return Response({'ok': True, 'data': data})
+        if res.status_code == 200:
+            utils.calculate_DB_time(start_time)
+            return Response({'ok': True, 'data': data})
 
     if request.method == 'POST':
-        account_name = request.GET.get('account')
-        active = request.GET.get('active', True)
-
-        add_account_to_config(account_name, active)
-
+        res = requests.post(f"{api_base_url}/instagram/insights/accounts", params={
+            "active": request.GET.get('active', True),
+            "account": request.GET.get('account')
+        })
         utils.calculate_DB_time(start_time)
         return Response({'ok': True}, status=status.HTTP_201_CREATED)
 
@@ -53,26 +54,45 @@ def account_detail(request, account_name):
     start_time = utils.start_time()
 
     if request.method == 'GET':
-
-        account = request.GET.get('account') or "time.in.progress"
         platform = request.GET.get('platform') or 'instagram'
-        interval = int(request.GET.get('interval') or 1)
-        range = request.GET.get('range') or "hour"
 
-        data = get_graph_data(account, range, interval, platform)
+        params = {
+            "interval": int(request.GET.get('interval') or 1),
+            "account": request.GET.get('account') or "time.in.progress",
+            "range": request.GET.get('range') or "hour",
+        }
+
+        try:
+            res = requests.get(
+                f"{api_base_url}/{platform}/insights/data", params=params, timeout=10)
+
+            res.raise_for_status()
+            data = res.json()
+        except Exception as e:
+            print("Request failed:", e)
+            return Response(status=status.HTTP_400_BAD_REQUEST)
 
         utils.calculate_DB_time(start_time)
         return Response({'ok': True, **data}, status=status.HTTP_200_OK)
 
     if request.method == 'PATCH':
-        active = request.GET.get('active')
-        add_account_to_config(account_name, active)
+        res = requests.patch(f"{api_base_url}/{platform}/insights/accounts", params={
+            "account": account_name,
+            "active": request.GET.get('active'),
+        })
 
-        utils.calculate_DB_time(start_time)
-        return Response({'ok': True}, status=status.HTTP_200_OK)
+        if res.status_code == 200:
+            utils.calculate_DB_time(start_time)
+            return Response({'ok': True}, status=status.HTTP_200_OK)
 
     if request.method == 'DELETE':
-        remove_account_from_config(account_name)
+        res = requests.delete(f"{api_base_url}/{platform}/insights/accounts", params={
+            "account": account_name,
+        })
+
+        if res.status_code == 200:
+            utils.calculate_DB_time(start_time)
+            return Response({'ok': True}, status=status.HTTP_200_OK)
 
         utils.calculate_DB_time(start_time)
         return Response({'ok': True}, status=status.HTTP_200_OK)
@@ -98,7 +118,22 @@ def overview(request):
         historical_list = []
 
         for account in accounts:
-            data = get_graph_data(account, range, interval, platform)
+            try:
+                res = requests.get(
+                    f"{api_base_url}/{platform}/insights/data",
+                    params={
+                        "interval": interval,
+                        "account": account,
+                        "range": range,
+                    },
+                    timeout=10
+                )
+
+                res.raise_for_status()
+                data = res.json()
+            except Exception as e:
+                print("Request failed:", e)
+                data = []
 
             data_list.append(data["data"])
             historical_list.append(data["historical"])
@@ -125,20 +160,22 @@ def config(request):
     start_time = utils.start_time()
 
     if request.method == "GET":
-        config = get_config()
+        res = requests.get(f"{api_base_url}/instagram/insights/config")
 
-        utils.calculate_DB_time(start_time)
-        return Response(config, status=status.HTTP_200_OK)
+        if res.status_code == 200:
+            config = res.json()
+
+            utils.calculate_DB_time(start_time)
+            return Response(config, status=status.HTTP_200_OK)
 
     if request.method == "PUT":
-        print('TODO; Update the config')
-
         data = request.data
 
         if data:
-            success = save_config(data)
+            res = requests.put(
+                f"{api_base_url}/instagram/insights/config", data=request.data)
 
-            if success:
+            if res.status_code == 200:
                 utils.calculate_DB_time(start_time)
                 return Response(status=status.HTTP_204_NO_CONTENT)
 
