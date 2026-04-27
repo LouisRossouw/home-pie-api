@@ -18,7 +18,8 @@ ASS = {'file': F, "func": "apps_status"}
 AS = {'file': F, "func": "app_status"}
 ARD = {'file': F, "func": "app_recorded_data"}
 
-api_base_rul = "http://10.0.0.152:5005"
+# TODO; Move url to .env or somewhere central.
+api_base_url = "http://10.0.0.152:5005"
 
 
 @dec.decorator_pingping_config
@@ -29,7 +30,7 @@ def pingping_config(request):
     start_time = utils.start_time()
 
     if request.method == "GET":
-        res = requests.get(f"{api_base_rul}/health")
+        res = requests.get(f"{api_base_url}/health")
 
         if res.status_code == 200:
             et = utils.calculate_DB_time(start_time)
@@ -46,7 +47,7 @@ def pingping_status(request):
     start_time = utils.start_time()
 
     if request.method == "GET":
-        res = requests.get(f"{api_base_rul}/health")
+        res = requests.get(f"{api_base_url}/health")
 
         if res.status_code == 200:
             et = utils.calculate_DB_time(start_time)
@@ -63,7 +64,7 @@ def app_config(request, app_name):
     start_time = utils.start_time()
 
     if request.method == "GET":
-        res = requests.get(f"{api_base_rul}/ping-apps?app={app_name}")
+        res = requests.get(f"{api_base_url}/ping-apps?app={app_name}")
 
         if res.ok:
             et = utils.calculate_DB_time(start_time)
@@ -80,7 +81,7 @@ def apps_config(request):
     start_time = utils.start_time()
 
     if request.method == "GET":
-        res = requests.get(f"{api_base_rul}/ping-apps/actions")
+        res = requests.get(f"{api_base_url}/ping-apps/actions")
 
         if res.ok:
             et = utils.calculate_DB_time(start_time)
@@ -97,7 +98,7 @@ def apps_status(request):
     start_time = utils.start_time()
 
     if request.method == "GET":
-        res = requests.get(f"{api_base_rul}/ping-apps/status")
+        res = requests.get(f"{api_base_url}/ping-apps/status")
 
         if res.ok:
             utils.calculate_DB_time(start_time)
@@ -114,7 +115,7 @@ def app_status(request, app_name):
     start_time = utils.start_time()
 
     if request.method == "GET":
-        res = requests.get(f"{api_base_rul}/ping-apps/status?app={app_name}")
+        res = requests.get(f"{api_base_url}/ping-apps/status?app={app_name}")
 
         if res.ok:
             utils.calculate_DB_time(start_time)
@@ -135,7 +136,7 @@ def app_recorded_data(request, app_name):
 
     if request.method == "GET":
         res = requests.get(
-            f"{api_base_rul}/ping-apps/data?app={app_name}&interval={interval}&range={range}")
+            f"{api_base_url}/ping-apps/data?app={app_name}&interval={interval}&range={range}")
 
         if res.ok:
             data = {"appName": app_name, "app_status": res.json()}
