@@ -10,13 +10,14 @@ from shared.utils.printouts.printout_general import printout
 
 from .decorators import decorator_overview, decorator_platform_data, decorator_config
 
+from django.conf import settings
+
 F = str(__name__)
 O = {'file': F, "func": "overview"}
 PD = {'file': F, "func": "platform_data"}
 C = {'file': F, "func": "config"}
 
-# TODO; Move url to .env or somewhere central.
-api_base_url = "http://10.0.0.152:5006"
+api_base_url = settings.INSIGHTS_API_URL
 
 
 def get_data(platform, params):

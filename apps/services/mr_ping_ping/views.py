@@ -9,6 +9,8 @@ from shared.utils.printouts.printout_general import printout
 from . import decorators as dec
 
 
+from django.conf import settings
+
 F = str(__name__)
 PC = {'file': F, "func": "pingping_config"}
 PS = {'file': F, "func": "pingping_status"}
@@ -18,8 +20,7 @@ ASS = {'file': F, "func": "apps_status"}
 AS = {'file': F, "func": "app_status"}
 ARD = {'file': F, "func": "app_recorded_data"}
 
-# TODO; Move url to .env or somewhere central.
-api_base_url = "http://10.0.0.152:5005"
+api_base_url = settings.PING_PING_API_URL
 
 
 @dec.decorator_pingping_config

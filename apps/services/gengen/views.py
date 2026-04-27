@@ -6,12 +6,13 @@ from .decorators import decorator_start_gengen, decorator_check_gengen_progress
 from shared.utils.printouts.printout_general import printout
 import shared.utils.utils as utils
 
+from django.conf import settings
+
 F = str(__name__)
 SG = {'file': F, "func": "start_gengen"}
 CGP = {'file': F, "func": "check_genGen_progress"}
 
-# TODO; Move url to .env or somewhere central.
-api_base_url = "http://10.0.0.152:5006"
+api_base_url = settings.INSIGHTS_API_URL
 
 
 @decorator_start_gengen

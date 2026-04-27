@@ -9,14 +9,15 @@ from rest_framework.response import Response
 
 from .decorators import decorator_config, decorator_accounts, decorator_account_detail, decorator_overview
 
+from django.conf import settings
+
 F = str(__name__)
 A = {'file': F, "func": "accounts"}
 AD = {'file': F, "func": "account_detail"}
 O = {'file': F, "func": "overview"}
 C = {'file': F, "func": "config"}
 
-# TODO; Move url to .env or somewhere central.
-api_base_url = "http://10.0.0.152:5006"
+api_base_url = settings.INSIGHTS_API_URL
 
 
 @decorator_accounts
