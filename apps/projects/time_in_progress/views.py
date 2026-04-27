@@ -22,7 +22,7 @@ api_base_url = settings.INSIGHTS_API_URL
 
 def get_data(platform, params):
     try:
-        res = requests.get(f"{api_base_url}/{platform}/data", params=params, timeout=10)  # nopep8
+        res = requests.get(f"{api_base_url}/{platform}/insights/data", params=params, timeout=10)  # nopep8
         res.raise_for_status()
         return res.json()
     except requests.RequestException as e:
@@ -99,7 +99,7 @@ def platform_data(request, platform):
         # Temp; Only allow tiktok for now.
         if platform == 'tiktok':
             try:
-                res = requests.post(f"{api_base_url}/tiktok/data", params={
+                res = requests.post(f"{api_base_url}/tiktok/insights/data", params={
                     "platform": platform,
                     "followers": followers,
                     "following": following,
