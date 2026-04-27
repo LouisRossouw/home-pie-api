@@ -98,7 +98,7 @@ def platform_data(request, platform):
         # Temp; Only allow tiktok for now.
         if platform == 'tiktok':
             try:
-                res = requests.post(f"{api_base_url}/'tiktok/data", params={
+                res = requests.post(f"{api_base_url}/tiktok/data", params={
                     "platform": platform,
                     "followers": followers,
                     "following": following,
